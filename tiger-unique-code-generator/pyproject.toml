@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "tiger-unique-code-generator-bot"
+version = "0.1.0"
+description = "Discord bot for distributing Tiger Cheers code"
+authors = ["RhapsodyLabs <gm@rhapsodylabs.xyz>"]
+
+[tool.poetry.dependencies]
+python = ">=3.8.0,<3.10"
+numpy = "^1.22.2"
+replit = "^3.2.4"
+rollbar = "^0.16.2"
+discord = "^1.7.3"
+pandas = "^1.4.1"
+pony = "^0.7.16"
+psycopg2 = "^2.9.3"
+
+[tool.poetry.dev-dependencies]
+yapf = "^0.32.0"
+jedi = "^0.18.1"
+pylama = "^8.3.7"
+toml = "^0.10.2"
+black = "^22.1.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.yapf]
+based_on_style = "pep8"
+spaces_before_comment = "4"
+split_before_logical_operator = true
+column_limit = "120"
