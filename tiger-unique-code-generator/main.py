@@ -32,6 +32,7 @@ class TigerCheersReceiver(db.Entity):
     author_id = orm.Required(str, column="author_id")
     unique_code = orm.Required(str, column="unique_code")
     role = orm.Required(str, column="role")
+    username = orm.Required(str, column="username")
 
 
 db.generate_mapping(create_tables=False)
@@ -45,9 +46,9 @@ def get_total_generated_codes():
     return TigerCheersReceiver.select().count()
 
 
-def save_author_unique_codes(author_id: str, codes: List[str], role: str):
+def save_author_unique_codes(author_id: str, codes: List[str], role: str, username: str):
     for code in codes:
-        TigerCheersReceiver(author_id=author_id, unique_code=code, role=role)
+        TigerCheersReceiver(author_id=author_id, unique_code=code, role=role, username=username)
     orm.flush()
 
 RolesCodeAllocation = namedtuple('RolesCodeAllocation', ['role_id', 'role_name', 'allocation' ])
@@ -78,9 +79,9 @@ guild = discord.Guild
 success_color = 0x0027FF
 error_color = 0xFF0000
 valid_color = 0x00FF00
-allowlist_command = "/tigercheers"
+allowlist_command = os.environ["DISCORD_COMMAND_TEXT"]
 discord_watching_text = "the Lucky Tigers"
-max_allocation = 1000
+max_allocation = int(os.environ["CODES_MAX_ALLOCATION"])
 
 
 @client.event
@@ -107,14 +108,14 @@ async def on_message(message):
                     author_data = get_author_records(author_id)
 
                     logging.info(f"Total generated codes: {total_generated_codes}")
-                    if total_generated_codes == max_allocation:
-                        await handle_code_sold_out(message)
-                        return
-
 
                     # user has claimed the unique codes
                     if author_data.count() > 0:
-                        await handle_has_claimed_codes(message)
+                        await handle_has_claimed_codes(message, author_data)
+                        return
+
+                    if total_generated_codes == max_allocation:
+                        await handle_code_sold_out(message)
                         return
 
                     success = await handle_unique_codes_distribution(message, total_generated_codes)
@@ -139,6 +140,7 @@ async def handle_unique_codes_distribution(message, total_generated_codes: int):
     author_id = str(message.author.id)
     role_ids = [str(role.id) for role in message.author.roles]
     logging.info(f'User Roles: {message.author.roles}')
+    logging.info(f"Username: {message.author}")
 
     for tiger_role in tiger_allocation:
         if tiger_role.role_id in role_ids:
@@ -150,7 +152,7 @@ async def handle_unique_codes_distribution(message, total_generated_codes: int):
             logging.info(f'Generates {allocation} unique codes for user: {author_id}')
             codes = [random_code() for _ in range(allocation)]
             await send_unique_codes(codes, message)
-            save_author_unique_codes(author_id=str(author_id), codes=codes, role=tiger_role.role_name)
+            save_author_unique_codes(author_id=str(author_id), codes=codes, role=tiger_role.role_name, username=str(message.author))
 
             return True
 
@@ -170,9 +172,9 @@ async def send_unique_codes(codes, message):
 
 async def handle_code_sold_out(message):
     answer = discord.Embed(title="The Tiger Cheers code has been exhausted",
-                           description=f"""Hi, apology, but we have run out of the unique codes""",
+                           description=f"""It looks like the Tiger Cheers codes have ran out!""",
                            colour=success_color)
-    await message.author.send(embed=answer)
+    await message.reply(embed=answer)
 
 
 async def handle_user_disabled_pm(message):
@@ -182,12 +184,23 @@ async def handle_user_disabled_pm(message):
     await message.reply(embed=answer)
 
 
-async def handle_has_claimed_codes(message):
-    logging.info(f"User {author_id} has claimed the unique codes")
-    answer = discord.Embed(title="You have claimed the Tiger Cheers Code",
-                           description=f"""Hi, apology, but you have previously claimed the Tiger Cheers Code""",
+async def handle_has_claimed_codes(message, author_data):
+    logging.info(f"User {message.author.id} has claimed the unique codes")
+    codes = [data.unique_code for data in author_data]
+    logging.info(f"Already claimed codes: {codes}")
+
+    user_dm = discord.Embed(
+        title="Hi! Here is your Tiger Cheers codes",
+        description=
+        f"""It might have taken a while, but here is what you asked for.\n\n`Codes` : **{', '.join(codes)}**\n`Channel` : **{message.channel.name}**""",
+        colour=success_color)
+
+    channel_response = discord.Embed(title="You have claimed the Tiger Cheers Code",
+                           description=f"""It looks like you have already claimed, however, we resent the codes to your DMs!""",
                            colour=success_color)
-    await message.author.send(embed=answer)
+
+    await message.author.send(embed=user_dm)
+    await message.reply(embed=channel_response)
     rollbar.report_message('User has claimed the code', 'warning', extra_data={'user': {
         "id": message.author.id,
     }})
@@ -198,7 +211,7 @@ async def handle_not_eligible_user(message):
         title="You're not eligible to claim the Tiger Cheers Code",
         description=f"""Hi, apology, but currently you're not eligible to claim the Tiger Cheers Code""",
         colour=success_color)
-    await message.author.send(embed=answer)
+    await message.reply(embed=answer)
 
 
 def random_code(size=8, chars=string.ascii_uppercase + string.digits):
