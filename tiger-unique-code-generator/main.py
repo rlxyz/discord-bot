@@ -163,7 +163,7 @@ async def send_unique_codes(codes, message):
     answer = discord.Embed(
         title="Hi! Here is your Tiger Cheers codes",
         description=
-        f"""Hey Tiger! Here are your codes for Tiger Cheers.\n\n`Codes` : **{', '.join(codes)}**\n`Channel` : **{message.channel.name}**\n\nPlease ensure you selected the right country for the redemption. Tiger Cheers is only open to holders that are non-muslim and above 21 years of age.""",
+        f"""Hey Tiger! Here are your codes for Tiger Cheers.\n\n`Codes` : **{', '.join(codes)}**\n`Channel` : **{message.channel.name}**\n`Location`: **{(allowlist_command[-4:]).upper()}**\n\nPlease ensure you selected the right country for the redemption. Tiger Cheers is only open to holders that are non-muslim and above 21 years of age.""",
         colour=success_color)
     await message.author.send(embed=answer)
     await message.reply(embed=discord.Embed(title="Congrats! You have claimed your Tiger Cheers Codes!",
@@ -192,7 +192,7 @@ async def handle_has_claimed_codes(message, author_data):
     user_dm = discord.Embed(
         title="Hey Tiger! Seems like you’ve redeemed your codes already.",
         description=
-        f"""Hey Tiger! Here are your codes for Tiger Cheers.\n\n`Codes` : **{', '.join(codes)}**\n`Channel` : **{message.channel.name}**\n\nPlease ensure you selected the right country for the redemption. Tiger Cheers is only open to holders that are non-muslim and above 21 years of age.""",
+        f"""Hey Tiger! Here are your codes for Tiger Cheers.\n\n`Codes` : **{', '.join(codes)}**\n`Channel` : **{message.channel.name}**\n**`Location`: **{(allowlist_command[-4:]).upper()}**\n\nPlease ensure you selected the right country for the redemption. Tiger Cheers is only open to holders that are non-muslim and above 21 years of age.""",
         colour=success_color)
 
     channel_response = discord.Embed(title="Codes already been redeemed",
