@@ -163,23 +163,23 @@ async def send_unique_codes(codes, message):
     answer = discord.Embed(
         title="Hi! Here is your Tiger Cheers codes",
         description=
-        f"""It might have taken a while, but here is what you asked for.\n\n`Codes` : **{', '.join(codes)}**\n`Channel` : **{message.channel.name}**""",
+        f"""Hey Tiger! Here are your codes for Tiger Cheers.\n\n`Codes` : **{', '.join(codes)}**\n`Channel` : **{message.channel.name}**\n\nPlease ensure you selected the right country for the redemption. Tiger Cheers is only open to holders that are non-muslim and above 21 years of age.""",
         colour=success_color)
     await message.author.send(embed=answer)
-    await message.reply(embed=discord.Embed(title="Congrats, you have claim your Tiger Cheers Codes!",
-                                            description=f"""Please Check your DM to retrieve your Tiger unique codes""",
+    await message.reply(embed=discord.Embed(title="Congrats! You have claimed your Tiger Cheers Codes!",
+                                            description=f"""Please check your DMs to retrieve your unique Tiger Cheers codes.""",
                                             colour=success_color))
 
 async def handle_code_sold_out(message):
-    answer = discord.Embed(title="The Tiger Cheers code has been exhausted",
-                           description=f"""It looks like the Tiger Cheers codes have ran out!""",
+    answer = discord.Embed(title="Tiger Cheers Codes have been exhausted",
+                           description=f"""Oh no! It looks like the Tiger Cheers codes have ran out.""",
                            colour=success_color)
     await message.reply(embed=answer)
 
 
 async def handle_user_disabled_pm(message):
-    answer = discord.Embed(title="Private Message is disabled",
-                           description=f"""Hi, please enable your PM to receive the Tiger Cheers Codes!""",
+    answer = discord.Embed(title="Private Message Disabled",
+                           description=f"""Hey Tiger, please enable your private message for this server to receive the Tiger Cheers Codes! You can turn it off right after.""",
                            colour=error_color)
     await message.reply(embed=answer)
 
@@ -190,13 +190,13 @@ async def handle_has_claimed_codes(message, author_data):
     logging.info(f"Already claimed codes: {codes}")
 
     user_dm = discord.Embed(
-        title="Hi! Here is your Tiger Cheers codes",
+        title="Hey Tiger! Seems like you’ve redeemed your codes already.",
         description=
-        f"""It might have taken a while, but here is what you asked for.\n\n`Codes` : **{', '.join(codes)}**\n`Channel` : **{message.channel.name}**""",
+        f"""Hey Tiger! Here are your codes for Tiger Cheers.\n\n`Codes` : **{', '.join(codes)}**\n`Channel` : **{message.channel.name}**\n\nPlease ensure you selected the right country for the redemption. Tiger Cheers is only open to holders that are non-muslim and above 21 years of age.""",
         colour=success_color)
 
-    channel_response = discord.Embed(title="You have claimed the Tiger Cheers Code",
-                           description=f"""It looks like you have already claimed, however, we resent the codes to your DMs!""",
+    channel_response = discord.Embed(title="Codes already been redeemed",
+                           description=f"""Hey Tiger! Seems like you’ve redeemed your codes already. However, we did resend your claimed codes to your DMs.""",
                            colour=success_color)
 
     await message.author.send(embed=user_dm)
