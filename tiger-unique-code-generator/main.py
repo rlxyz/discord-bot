@@ -23,7 +23,8 @@ db_password = os.environ["DB_PASSWORD"]
 db_name = os.environ["DB_NAME"]
 
 db = orm.Database()
-db.bind(provider='postgres', user=db_user, password=db_password, host=db_host, port=db_port, database=db_name)
+db.bind(provider='postgres', user=db_user, password=db_password,
+        host=db_host, port=db_port, database=db_name)
 
 
 class TigerCheersReceiver(db.Entity):
@@ -42,26 +43,31 @@ def get_author_records(author_id: str):
     results = TigerCheersReceiver.select(lambda c: c.author_id == author_id)
     return results
 
+
 def get_total_generated_codes():
     return TigerCheersReceiver.select().count()
 
 
 def save_author_unique_codes(author_id: str, codes: List[str], role: str, username: str):
     for code in codes:
-        TigerCheersReceiver(author_id=author_id, unique_code=code, role=role, username=username)
+        TigerCheersReceiver(author_id=author_id,
+                            unique_code=code, role=role, username=username)
     orm.flush()
 
-RolesCodeAllocation = namedtuple('RolesCodeAllocation', ['role_id', 'role_name', 'allocation' ])
+
+RolesCodeAllocation = namedtuple(
+    'RolesCodeAllocation', ['role_id', 'role_name', 'allocation'])
 role_lucky = os.environ["TIGER_LUCKY_ROLE_ID"]    # 937283070132912149
 role_javan = os.environ["TIGER_JAVAN_ROLE_ID"]    # 937267412234043432
 role_caspian = os.environ["TIGER_CASPIAN_ROLE_ID"]    # 937267656124411914
-role_sabertooth = os.environ["TIGER_SABERTOOTH_ROLE_ID"]    # 937267300959141918
+role_sabertooth = os.environ["TIGER_SABERTOOTH_ROLE_ID"]  # 937267300959141918
 tiger_allocation = [
     RolesCodeAllocation(role_sabertooth, 'sabertooth', 8),
     RolesCodeAllocation(role_caspian, 'caspian', 6),
     RolesCodeAllocation(role_javan, 'javan', 4),
     RolesCodeAllocation(role_lucky, 'lucky', 2)
 ]
+redemption_time_slug = os.environ["REDEMPTION_TIME_SLUG"]
 
 discord_token = os.environ["DISCORD_TOKEN"]
 discord_channel = os.environ["DISCORD_CHANNEL_ID"]
@@ -107,7 +113,8 @@ async def on_message(message):
                     total_generated_codes = get_total_generated_codes()
                     author_data = get_author_records(author_id)
 
-                    logging.info(f"Total generated codes: {total_generated_codes}")
+                    logging.info(
+                        f"Total generated codes: {total_generated_codes}")
 
                     # user has claimed the unique codes
                     if author_data.count() > 0:
@@ -121,7 +128,8 @@ async def on_message(message):
                     success = await handle_unique_codes_distribution(message, total_generated_codes)
 
                     if not success:
-                        logging.info(f"User {author_id} not in the roles that's eligible to claim")
+                        logging.info(
+                            f"User {author_id} not in the roles that's eligible to claim")
                         await handle_not_eligible_user(message)
                         rollbar.report_message('User not eligible to claim the code',
                                                'warning',
@@ -147,12 +155,15 @@ async def handle_unique_codes_distribution(message, total_generated_codes: int):
             if (max_allocation - total_generated_codes > tiger_role.allocation):
                 allocation = tiger_role.allocation
             else:
-                allocation = tiger_role.allocation - (max_allocation - total_generated_codes)
+                allocation = tiger_role.allocation - \
+                    (max_allocation - total_generated_codes)
 
-            logging.info(f'Generates {allocation} unique codes for user: {author_id}')
+            logging.info(
+                f'Generates {allocation} unique codes for user: {author_id}')
             codes = [random_code() for _ in range(allocation)]
             await send_unique_codes(codes, message)
-            save_author_unique_codes(author_id=str(author_id), codes=codes, role=tiger_role.role_name, username=str(message.author))
+            save_author_unique_codes(author_id=str(
+                author_id), codes=codes, role=tiger_role.role_name, username=str(message.author))
 
             return True
 
@@ -162,13 +173,13 @@ async def handle_unique_codes_distribution(message, total_generated_codes: int):
 async def send_unique_codes(codes, message):
     answer = discord.Embed(
         title="Hi! Here is your Tiger Cheers codes",
-        description=
-        f"""Here are your codes for Tiger Cheers.\n\n`Codes` : **{', '.join(codes)}**\n`Channel` : **{message.channel.name}**\n`Location`: **{(allowlist_command[-2:]).upper()}**\n\nPlease ensure you selected the right country for the redemption. Tiger Cheers is only open to holders that are non-muslim and above 21 years of age.""",
+        description=f"""Here are your codes for Tiger Cheers.\n\n`Codes` : **{', '.join(codes)}**\n`Channel` : **{message.channel.name}**\n`Location`: **{(allowlist_command[-2:]).upper()}**\n`Month`: **{redemption_time_slug}**\n\nPlease ensure you selected the right country for the redemption. Tiger Cheers is only open to holders that are non-muslim and above 21 years of age.""",
         colour=success_color)
     await message.author.send(embed=answer)
     await message.reply(embed=discord.Embed(title="Congrats! You have claimed your Tiger Cheers Codes!",
                                             description=f"""Please check your DMs to retrieve your unique Tiger Cheers codes.""",
                                             colour=success_color))
+
 
 async def handle_code_sold_out(message):
     answer = discord.Embed(title="Tiger Cheers Codes have been exhausted",
@@ -191,13 +202,12 @@ async def handle_has_claimed_codes(message, author_data):
 
     user_dm = discord.Embed(
         title="Hey Tiger! Seems like you’ve redeemed your codes already.",
-        description=
-        f"""Here are your codes for Tiger Cheers.\n\n`Codes` : **{', '.join(codes)}**\n`Channel` : **{message.channel.name}**\n`Location`: **{(allowlist_command[-2:]).upper()}**\n\nPlease ensure you selected the right country for the redemption. Tiger Cheers is only open to holders that are non-muslim and above 21 years of age.""",
+        description=f"""Here are your codes for Tiger Cheers.\n\n`Codes` : **{', '.join(codes)}**\n`Channel` : **{message.channel.name}**\n`Location`: **{(allowlist_command[-2:]).upper()}**\n`Month`: **{redemption_time_slug}**\n\nPlease ensure you selected the right country for the redemption. Tiger Cheers is only open to holders that are non-muslim and above 21 years of age.""",
         colour=success_color)
 
     channel_response = discord.Embed(title="Codes already been redeemed",
-                           description=f"""Hey Tiger! Seems like you’ve redeemed your codes already. However, we did resend your claimed codes to your DMs.""",
-                           colour=success_color)
+                                     description=f"""Hey Tiger! Seems like you’ve redeemed your codes already. However, we did resend your claimed codes to your DMs.""",
+                                     colour=success_color)
 
     await message.author.send(embed=user_dm)
     await message.reply(embed=channel_response)
