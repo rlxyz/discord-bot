@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "address_bot"
+version = "0.1.0"
+description = ""
+authors = ["Jeevan Pillay <https://twitter.com/jeevanpillay"]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+discord = "^1.7.3"
+pandas = "^1.4.1"
+web3 = "^5.28.0"
+replit = "^3.2.4"
+rollbar = "^0.16.2"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
